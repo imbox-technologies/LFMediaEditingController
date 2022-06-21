@@ -1,0 +1,61 @@
+/* 
+  LFMediaEditingController.strings
+  LFMediaEditingController
+
+  Created by Mr.D on 2018/3/9.
+  Copyright © 2018年 LamTsanFeng. All rights reserved.
+*/
+
+/* -------- LFBaseEditingController -------*/
+"_LFME_oKButtonTitle" = "Accept";
+"_LFME_cancelButtonTitle" = "Cancel";
+"_LFME_processHintStr" = "Processing...";
+
+"_LFME_reachMaximumLimitTitle" = "Input limit reached";
+
+"_LFME_stickerDefault" = "Stickers";
+"_LFME_stickerPhotoAlbum" = "Photos";
+
+/* -------- LFAudioItem  -------*/
+"_LFME_defaultAudioItem_name" = "Default AudioTrack";
+"_LFME_MediaPicker_prompt" = "Please select the desired song";
+"_LFME_AudioTackTitle_prompt" = "Custom music";
+
+/* -------- LFRatioMenu  -------*/
+/**
+ * 命名规则 _LFME_ratio_$name
+ * 例如："_LFME_ratio_1x1" = "等比"
+ */
+"_LFME_ratio_Original" = "Original";
+
+/* -------- LFFilterMenu  -------*/
+"_LFME_filter_Original" = "Original";
+"_LFME_filter_Curve" = "Curve";
+"_LFME_filter_Chrome" = "Chrome";
+"_LFME_filter_Fade" = "Fade";
+"_LFME_filter_Instant" = "Instant";
+"_LFME_filter_Mono" = "Mono";
+"_LFME_filter_Noir" = "Noir";
+"_LFME_filter_Process" = "Process";
+"_LFME_filter_Tonal" = "Tonal";
+"_LFME_filter_Transfer" = "Transfer";
+"_LFME_filter_Linear" = "Linear";
+"_LFME_filter_Invert" = "Invert";
+"_LFME_filter_Monochrome" = "Monochrome";
+
+/* -------- LFBrushMenu  -------*/
+"_LFME_brush_Paint" = "Brush";
+"_LFME_brush_Highlight" = "Double";
+"_LFME_brush_Chalk" = "Chalk";
+"_LFME_brush_Fluorescent" = "Highlighter";
+"_LFME_brush_Stamp" = "Stamp";
+"_LFME_brush_Eraser" = "Eraser";
+
+/* -------- UserGuide  -------*/
+"_LFME_sticker_remove_normal" = "Drag here to delete";
+"_LFME_sticker_remove_selected" = "Let go to delete";
+
+/* -------- UserGuide  -------*/
+"_LFME_UserGuide_ToolBar_Scroll" = "Desplaza hacia la izquierda 👈 para encontrar más funciones.";
+"_LFME_UserGuide_StickerView_MovingView_Pinch" = "Dos dedos también pueden hacer zoom y rotar.";
+"_LFME_UserGuide_StickerView_DisplayView_LongPress" = "Manten presionado para obtener una vista previa de la imagen.";

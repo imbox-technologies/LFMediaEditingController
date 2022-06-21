@@ -973,8 +973,8 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
             
             if (stickerContents == nil) {
                 stickerContents = @[
-                    [LFStickerContent stickerContentWithTitle:@"默认" contents:@[LFStickerContentDefaultSticker]],
-                    [LFStickerContent stickerContentWithTitle:@"相册" contents:@[LFStickerContentAllAlbum]]
+                    [LFStickerContent stickerContentWithTitle:[NSBundle LFME_localizedStringForKey:@"_LFME_stickerDefault"] contents:@[LFStickerContentDefaultSticker]],
+                    [LFStickerContent stickerContentWithTitle:[NSBundle LFME_localizedStringForKey:@"_LFME_stickerPhotoAlbum"] contents:@[LFStickerContentAllAlbum]]
                 ];
             }
             

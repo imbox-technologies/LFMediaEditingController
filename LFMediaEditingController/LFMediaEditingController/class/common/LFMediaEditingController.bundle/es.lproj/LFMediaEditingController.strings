@@ -1,0 +1,61 @@
+/* 
+  LFMediaEditingController.strings
+  LFMediaEditingController
+
+  Created by Mr.D on 2018/3/9.
+  Copyright © 2018年 LamTsanFeng. All rights reserved.
+*/
+
+/* -------- LFBaseEditingController -------*/
+"_LFME_oKButtonTitle" = "Aceptar";
+"_LFME_cancelButtonTitle" = "Cancelar";
+"_LFME_processHintStr" = "Procesando...";
+
+"_LFME_reachMaximumLimitTitle" = "Límite de entrada alcanzado";
+
+"_LFME_stickerDefault" = "Pegatinas";
+"_LFME_stickerPhotoAlbum" = "Fotos";
+
+/* -------- LFAudioItem  -------*/
+"_LFME_defaultAudioItem_name" = "Default AudioTrack";
+"_LFME_MediaPicker_prompt" = "Por favor selecciona la canción deseada";
+"_LFME_AudioTackTitle_prompt" = "Música personalizada";
+
+/* -------- LFRatioMenu  -------*/
+/**
+ * 命名规则 _LFME_ratio_$name
+ * 例如："_LFME_ratio_1x1" = "等比"
+ */
+"_LFME_ratio_Original" = "Original";
+
+/* -------- LFFilterMenu  -------*/
+"_LFME_filter_Original" = "Original";
+"_LFME_filter_Curve" = "Curve";
+"_LFME_filter_Chrome" = "Chrome";
+"_LFME_filter_Fade" = "Fade";
+"_LFME_filter_Instant" = "Instant";
+"_LFME_filter_Mono" = "Mono";
+"_LFME_filter_Noir" = "Noir";
+"_LFME_filter_Process" = "Process";
+"_LFME_filter_Tonal" = "Tonal";
+"_LFME_filter_Transfer" = "Transfer";
+"_LFME_filter_Linear" = "Linear";
+"_LFME_filter_Invert" = "Invert";
+"_LFME_filter_Monochrome" = "Monochrome";
+
+/* -------- LFBrushMenu  -------*/
+"_LFME_brush_Paint" = "Pincel";
+"_LFME_brush_Highlight" = "Doble";
+"_LFME_brush_Chalk" = "Tiza";
+"_LFME_brush_Fluorescent" = "Subrayador";
+"_LFME_brush_Stamp" = "Sello";
+"_LFME_brush_Eraser" = "Borrador";
+
+/* -------- UserGuide  -------*/
+"_LFME_sticker_remove_normal" = "Arrastra aquí para eliminar";
+"_LFME_sticker_remove_selected" = "Suelta para borrar";
+
+/* -------- UserGuide  -------*/
+"_LFME_UserGuide_ToolBar_Scroll" = "Scroll to the left 👈 to find more features.";
+"_LFME_UserGuide_StickerView_MovingView_Pinch" = "Two fingers can also zoom and rotate.";
+"_LFME_UserGuide_StickerView_DisplayView_LongPress" = "Long press to preview the picture.";
