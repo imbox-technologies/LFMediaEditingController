@@ -44,8 +44,8 @@
         _orientation = orientation;
         /** 因数据可以多次重复编辑，暂时未能处理横竖屏切换的问题。 */
         [UIDevice LFME_setOrientation:orientation];
-        _oKButtonTitleColorNormal = [UIColor colorWithRed:(26/255.0) green:(173/255.0) blue:(25/255.0) alpha:1.0];
-        _cancelButtonTitleColorNormal = [UIColor colorWithWhite:0.8f alpha:1.f];
+        _oKButtonTitleColorNormal = [UIColor whiteColor];
+        _cancelButtonTitleColorNormal = [UIColor whiteColor];
         /** 创建笔刷缓存 */
         [LFBrushCache share].countLimit = 20;
         if (@available(iOS 7.0, *)) {
