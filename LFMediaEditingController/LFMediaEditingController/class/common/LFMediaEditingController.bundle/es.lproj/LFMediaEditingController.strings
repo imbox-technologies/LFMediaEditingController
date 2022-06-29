@@ -56,6 +56,6 @@
 "_LFME_sticker_remove_selected" = "Suelta para borrar";
 
 /* -------- UserGuide  -------*/
-"_LFME_UserGuide_ToolBar_Scroll" = "Scroll to the left 👈 to find more features.";
-"_LFME_UserGuide_StickerView_MovingView_Pinch" = "Two fingers can also zoom and rotate.";
-"_LFME_UserGuide_StickerView_DisplayView_LongPress" = "Long press to preview the picture.";
+"_LFME_UserGuide_ToolBar_Scroll" = "Desplaza hacia la izquierda 👈 para encontrar más funciones.";
+"_LFME_UserGuide_StickerView_MovingView_Pinch" = "Dos dedos también pueden hacer zoom y rotar.";
+"_LFME_UserGuide_StickerView_DisplayView_LongPress" = "Mantén presionado para obtener una vista previa de la imagen.";
