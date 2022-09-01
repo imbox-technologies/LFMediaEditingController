@@ -268,6 +268,9 @@ typedef NS_ENUM(NSUInteger, LFPhotoEditOperationSubType) {
 /** 代理 */
 @property (nonatomic, weak) id<LFPhotoEditingControllerDelegate> delegate;
 
+/* */
+@property (nonatomic, strong) NSDictionary *options;
+
 #pragma mark - deprecated
 /** 自定义贴图资源 */
 @property (nonatomic, strong) NSString *stickerPath __deprecated_msg("property deprecated. Use `operationAttrs[LFPhotoEditStickerAttributeName]`");

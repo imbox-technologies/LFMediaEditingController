@@ -316,11 +316,15 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
     [_edit_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [naviBar addSubview:_edit_cancelButton];
     
-    CGFloat editOkWidth = [[NSBundle LFME_localizedStringForKey:@"_LFME_oKButtonTitle"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size.width + 30;
+    NSString *_edit_finishButton_title = [NSBundle LFME_localizedStringForKey:@"_LFME_oKButtonTitle"];
+    if ([self.options objectForKey:@"_LFME_oKButtonTitle"]) {
+        _edit_finishButton_title = [self.options objectForKey:@"_LFME_oKButtonTitle"];
+    }
+    CGFloat editOkWidth = [_edit_finishButton_title boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size.width + 30;
 
     UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.lfme_width - editOkWidth-margin, 0, editOkWidth, naviHeight)];
     _edit_finishButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-    [_edit_finishButton setTitle:[NSBundle LFME_localizedStringForKey:@"_LFME_oKButtonTitle"] forState:UIControlStateNormal];
+    [_edit_finishButton setTitle:_edit_finishButton_title forState:UIControlStateNormal];
     _edit_finishButton.titleLabel.font = font;
     [_edit_finishButton setTitleColor:self.oKButtonTitleColorNormal forState:UIControlStateNormal];
     [_edit_finishButton addTarget:self action:@selector(finishButtonClick) forControlEvents:UIControlEventTouchUpInside];
