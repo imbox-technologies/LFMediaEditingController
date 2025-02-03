@@ -263,7 +263,7 @@ NSUInteger kToolbar_MaxItems = 6;
     UIView *edit_menu = [[UIView alloc] initWithFrame:CGRectMake(0, kToolbar_SubHeight, self.lfme_width, height)];
     edit_menu.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     CGFloat rgb = 34 / 255.0;
-    edit_menu.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:0.85];
+    edit_menu.backgroundColor = [UIColor colorWithRed:rgb green:rgb blue:rgb alpha:1.0];
     
     NSInteger buttonCount = 0;
     NSMutableArray <NSNumber *>*_imageIndexs = [@[] mutableCopy];

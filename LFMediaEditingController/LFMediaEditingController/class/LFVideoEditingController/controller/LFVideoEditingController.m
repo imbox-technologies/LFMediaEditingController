@@ -84,6 +84,8 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
 
 @property (nonatomic, strong, nullable) id stickerBarCacheResource;
 
+@property (nonatomic, assign) BOOL isHDSelected;
+
 @end
 
 @implementation LFVideoEditingController
@@ -140,6 +142,8 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
             return;
         }
     }
+    
+    self.isHDSelected = [[self.options objectForKey:@"hd"] boolValue];
     
     [self configEditingView];
     [self configCustomNaviBar];
@@ -299,13 +303,13 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
     
     _edit_naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.lfme_width, topbarHeight)];
     _edit_naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleBottomMargin;
-    _edit_naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:0.7];
+    _edit_naviBar.backgroundColor = [UIColor colorWithRed:(34/255.0) green:(34/255.0)  blue:(34/255.0) alpha:1.0];
     
     UIView *naviBar = [[UIView alloc] initWithFrame:CGRectMake(0, topbarHeight-naviHeight, _edit_naviBar.frame.size.width, naviHeight)];
     naviBar.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     [_edit_naviBar addSubview:naviBar];
     
-    UIFont *font = [UIFont systemFontOfSize:15];
+    UIFont *font = [UIFont boldSystemFontOfSize:15];
     CGFloat editCancelWidth = [[NSBundle LFME_localizedStringForKey:@"_LFME_cancelButtonTitle"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size.width + 30;
     UIButton *_edit_cancelButton = [[UIButton alloc] initWithFrame:CGRectMake(margin, 0, editCancelWidth, naviHeight)];
     _edit_cancelButton.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
@@ -315,15 +319,31 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
     [_edit_cancelButton addTarget:self action:@selector(cancelButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [naviBar addSubview:_edit_cancelButton];
     
-    CGFloat editOkWidth = [[NSBundle LFME_localizedStringForKey:@"_LFME_oKButtonTitle"] boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size.width + 30;
+    NSString *_edit_finishButton_title = [NSBundle LFME_localizedStringForKey:@"_LFME_oKButtonTitle"];
+    if ([self.options objectForKey:@"_LFME_oKButtonTitle"]) {
+        _edit_finishButton_title = [self.options objectForKey:@"_LFME_oKButtonTitle"];
+    }
+    CGFloat editOkWidth = [_edit_finishButton_title boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX) options:NSStringDrawingUsesFontLeading attributes:@{NSFontAttributeName:font} context:nil].size.width + 30;
     
     UIButton *_edit_finishButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.lfme_width - editOkWidth-margin, 0, editOkWidth, naviHeight)];
     _edit_finishButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-    [_edit_finishButton setTitle:[NSBundle LFME_localizedStringForKey:@"_LFME_oKButtonTitle"] forState:UIControlStateNormal];
+    [_edit_finishButton setTitle:_edit_finishButton_title forState:UIControlStateNormal];
     _edit_finishButton.titleLabel.font = font;
     [_edit_finishButton setTitleColor:self.oKButtonTitleColorNormal forState:UIControlStateNormal];
     [_edit_finishButton addTarget:self action:@selector(finishButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [naviBar addSubview:_edit_finishButton];
+    
+    CGFloat buttonSize = 40;
+    CGFloat centerX = (self.view.lfme_width - buttonSize) / 2;
+    CGFloat centerY = (naviHeight - buttonSize) / 2;
+    UIButton *hdToggleButton = [[UIButton alloc] initWithFrame:CGRectMake(centerX, centerY, buttonSize, buttonSize)];
+    hdToggleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    NSString *imageName = self.isHDSelected ? @"deselect-hd" : @"select-hd";
+    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [hdToggleButton setImage:image forState:UIControlStateNormal];
+    [hdToggleButton setTintColor:[UIColor whiteColor]];
+    [hdToggleButton addTarget:self action:@selector(toggleHDButton:) forControlEvents:UIControlEventTouchUpInside];
+    [naviBar addSubview:hdToggleButton];
     
     [self.view addSubview:_edit_naviBar];
 }
@@ -341,7 +361,7 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
         toolbarType |= LFEditToolbarType_text;
     }
     if (self.operationType&LFVideoEditOperationType_audio) {
-        toolbarType |= LFEditToolbarType_audio;
+        //toolbarType |= LFEditToolbarType_audio;
     }
     if (@available(iOS 9.0, *)) {
         if (self.operationType&LFVideoEditOperationType_filter) {
@@ -560,6 +580,16 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
             });
         }
     });
+}
+
+- (void)toggleHDButton:(UIButton *)sender {
+    self.isHDSelected = !self.isHDSelected;
+    NSMutableDictionary *mutableOptions = [NSMutableDictionary dictionaryWithDictionary:self.options];
+    [mutableOptions setValue:[NSNumber numberWithBool:self.isHDSelected] forKey:@"hd"];
+    self.options = [NSDictionary dictionaryWithDictionary:mutableOptions];
+    
+    NSString *imageName = self.isHDSelected ? @"deselect-hd" : @"select-hd";
+    [sender setImage:[[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
 }
 
 #pragma mark - UIGestureRecognizerDelegate

@@ -250,7 +250,7 @@ NSString *const kLFStickerViewData_movingView_rotation = @"LFStickerViewData_mov
 - (LFMovingRemoveView *)cacheMovingRemoveView
 {
     if (_cacheMovingRemoveView == nil) {
-        _cacheMovingRemoveView = [[LFMovingRemoveView alloc] initWithFrame:CGRectMake((self.bounds.size.width-150)/2, self.bounds.size.height - 100 - 30, 150, 100)];
+        _cacheMovingRemoveView = [[LFMovingRemoveView alloc] initWithFrame:CGRectMake((self.bounds.size.width-150)/2, self.bounds.size.height - 100 - 30, 150, 120)];
     }
     return _cacheMovingRemoveView;
 }

@@ -72,7 +72,7 @@
     UILabel *label = [[UILabel alloc] init];
     label.textAlignment = NSTextAlignmentCenter;
     label.textColor = [UIColor whiteColor];
-    label.numberOfLines = 1;
+    label.numberOfLines = 2;
     label.font = [UIFont systemFontOfSize:15.f];
     [self addSubview:label];
     _label = label;
@@ -88,8 +88,8 @@
     CGFloat margin = 10.0;
     [self LFME_setCornerRadius:self.bounds.size.width*0.1];
     self.contentView.frame = self.bounds;
-    self.imageView.frame = CGRectMake(margin, margin*2, self.bounds.size.width - margin*2, self.bounds.size.height * 0.6 - margin*3);
-    self.label.frame = CGRectMake(margin, self.bounds.size.height * 0.6, self.bounds.size.width - margin*2, self.bounds.size.height * 0.4 - margin);
+    self.imageView.frame = CGRectMake(margin, margin*2, self.bounds.size.width - margin*2, self.bounds.size.height * 0.5 - margin*3);
+    self.label.frame = CGRectMake(margin, self.bounds.size.height * 0.5, self.bounds.size.width - margin*2, self.bounds.size.height * 0.5 - margin);
 }
 
 - (void)setSelected:(BOOL)selected
