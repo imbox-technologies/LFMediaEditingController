@@ -91,6 +91,8 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
 
 @property (nonatomic, strong, nullable) id stickerBarCacheResource;
 
+@property (nonatomic, assign) BOOL isHDSelected;
+
 @end
 
 @implementation LFPhotoEditingController
@@ -144,6 +146,9 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
             return;
         }
     }
+    
+    self.isHDSelected = [[self.options objectForKey:@"hd"] boolValue];
+    
     [self configScrollView];
     [self configCustomNaviBar];
     [self configBottomToolBar];
@@ -329,6 +334,18 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
     [_edit_finishButton setTitleColor:self.oKButtonTitleColorNormal forState:UIControlStateNormal];
     [_edit_finishButton addTarget:self action:@selector(finishButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [naviBar addSubview:_edit_finishButton];
+    
+    CGFloat buttonSize = 40;
+    CGFloat centerX = (self.view.lfme_width - buttonSize) / 2;
+    CGFloat centerY = (naviHeight - buttonSize) / 2;
+    UIButton *hdToggleButton = [[UIButton alloc] initWithFrame:CGRectMake(centerX, centerY, buttonSize, buttonSize)];
+    hdToggleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+    NSString *imageName = self.isHDSelected ? @"deselect-hd" : @"select-hd";
+    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [hdToggleButton setImage:image forState:UIControlStateNormal];
+    [hdToggleButton setTintColor:[UIColor whiteColor]];
+    [hdToggleButton addTarget:self action:@selector(toggleHDButton:) forControlEvents:UIControlEventTouchUpInside];
+    [naviBar addSubview:hdToggleButton];
     
     [self.view addSubview:_edit_naviBar];
 }
@@ -589,6 +606,16 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
     } else {
         finishImage(nil);
     }
+}
+
+- (void)toggleHDButton:(UIButton *)sender {
+    self.isHDSelected = !self.isHDSelected;
+    NSMutableDictionary *mutableOptions = [NSMutableDictionary dictionaryWithDictionary:self.options];
+    [mutableOptions setValue:[NSNumber numberWithBool:self.isHDSelected] forKey:@"hd"];
+    self.options = [NSDictionary dictionaryWithDictionary:mutableOptions];
+    
+    NSString *imageName = self.isHDSelected ? @"deselect-hd" : @"select-hd";
+    [sender setImage:[[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate] forState:UIControlStateNormal];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
