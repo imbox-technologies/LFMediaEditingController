@@ -71,6 +71,8 @@
 /** 跳转到某帧 */
 - (void)seekToTime:(CGFloat)time;
 
+- (double)currentTime;
+
 /** 进度处理 */
 #pragma mark - 自动实现进度 拖动回调
 /** 拖动开始调用 */

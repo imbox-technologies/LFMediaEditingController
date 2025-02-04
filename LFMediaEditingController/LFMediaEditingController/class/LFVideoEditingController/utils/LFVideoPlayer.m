@@ -354,6 +354,11 @@ static void *LFPlayerCurrentItemObservationContext = &LFPlayerCurrentItemObserva
     [self.player seekToTime:CMTimeMakeWithSeconds(time, self.mPlayerItem.asset.duration.timescale) toleranceBefore:kCMTimeZero toleranceAfter:kCMTimeZero];
 }
 
+- (double)currentTime
+{
+    return CMTimeGetSeconds(self.player.currentTime);
+}
+
 #pragma mark -
 #pragma mark Movie scrubber control
 
