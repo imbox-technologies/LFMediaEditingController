@@ -10,7 +10,6 @@
 #import <CoreImage/CoreImage.h>
 #import <Foundation/Foundation.h>
 #import <AVFoundation/AVFoundation.h>
-#import <GLKit/GLKit.h>
 #import "LFContext.h"
 
 
@@ -25,7 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) LFContextType contextType;
 
 /**
- The context type is LFContextTypeEAGL. And the large image that needs to be zoom. GLKView will be added to the first position of the contentView. Otherwise, the large image will become blurred after zoom in.
+ 
  */
 @property (weak, nonatomic) UIView *contentView;
 
@@ -34,7 +33,7 @@ NS_ASSUME_NONNULL_BEGIN
  Will be automatically loaded when setting the first CIImage or when rendering
  for the first if using a CoreGraphics context type.
  You can also set your own context.
- Supported contexts are CoreGraphics, EAGL
+ Supported contexts are CoreGraphics
  */
 @property (strong, nonatomic) LFContext *__nullable context;
 

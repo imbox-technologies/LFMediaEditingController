@@ -14,18 +14,17 @@
 
 #ifdef NSFoundationVersionNumber_iOS_9_0
 @import MetalKit;
-@interface LFContextImageView()<GLKViewDelegate, MTKViewDelegate>
+@interface LFContextImageView()<MTKViewDelegate>
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunguarded-availability"
 @property (nonatomic, weak) MTKView *MTKView;
 @property (nonatomic, strong) id<MTLCommandQueue> MTLCommandQueue;
 #pragma clang diagnostic pop
 #else
-@interface LFContextImageView()<GLKViewDelegate>
+
 #endif
 
 
-@property (nonatomic, weak) GLKView *GLKView;
 @property (nonatomic, weak) LFLView *LFLView;
 @property (nonatomic, weak) UIView *UIView;
 
@@ -109,9 +108,7 @@
 - (void)setContentView:(UIView *)contentView
 {
     _contentView = contentView;
-    if (_GLKView) {
-        [_contentView insertSubview:_GLKView atIndex:0];
-    }
+    
     [self setNeedsLayout];
     [self setNeedsDisplay];
 }
@@ -123,7 +120,6 @@
     if (self.contentView) {
         viewRect = self.contentView.bounds;
     }
-    _GLKView.frame = viewRect;
     _LFLView.frame = self.bounds;
     _UIView.frame = self.bounds;
 
@@ -132,11 +128,6 @@
 }
 
 - (void)unloadContext {
-    if (_GLKView != nil) {
-        [_GLKView removeFromSuperview];
-        _GLKView.delegate = nil;
-        _GLKView = nil;
-    }
     if (_LFLView != nil) {
         [_LFLView removeFromSuperview];
         _LFLView = nil;
@@ -163,20 +154,6 @@
     if (context != nil) {
         switch (context.type) {
             case LFContextTypeCoreGraphics:
-                break;
-            case LFContextTypeEAGL:
-            {
-                GLKView *view = [[GLKView alloc] initWithFrame:self.bounds context:context.EAGLContext];
-                view.contentScaleFactor = self.contentScaleFactor;
-                view.backgroundColor = [UIColor clearColor];
-                view.delegate = self;
-                if (self.contentView) {
-                    [_contentView insertSubview:view atIndex:0];
-                } else {
-                    [self insertSubview:view atIndex:0];
-                }
-                _GLKView = view;
-            }
                 break;
             case LFContextTypeLargeImage:
             {
@@ -219,7 +196,7 @@
 #endif
 #endif
             default:
-                [NSException raise:@"InvalidContext" format:@"Unsupported context type: %d. %@ only supports CoreGraphics, EAGL and Metal", (int)context.type, NSStringFromClass(self.class)];
+                [NSException raise:@"InvalidContext" format:@"Unsupported context type: %d. %@ only supports CoreGraphics and Metal", (int)context.type, NSStringFromClass(self.class)];
                 break;
         }
     }
@@ -230,7 +207,6 @@
 - (void)setNeedsDisplay {
     [super setNeedsDisplay];
     
-    [_GLKView setNeedsDisplay];
     if (_LFLView) {
         _LFLView.image = [self renderedUIImage];
     }
@@ -365,14 +341,9 @@
             case UIViewContentModeScaleAspectFill:
             case UIViewContentModeScaleAspectFit:
             {
-                if (self.context.type == LFContextTypeEAGL) {
-                    rect.origin.x = (rect.size.width - image.extent.size.width)/2;
-                    rect.origin.y = (rect.size.height - image.extent.size.height)/2;
-                    rect.size = image.extent.size;
-                }
 #if !(TARGET_IPHONE_SIMULATOR)
 #ifdef NSFoundationVersionNumber_iOS_9_0
-                else if (self.context.type == LFContextTypeMetal) {
+                if (self.context.type == LFContextTypeMetal) {
                     rect.origin.x = -(rect.size.width - image.extent.size.width)/2;
                     rect.origin.y = -(rect.size.height - image.extent.size.height)/2;
                 }
@@ -496,71 +467,6 @@ static CGRect LF_CGRectMultiply(CGRect rect, CGFloat contentScale) {
     rect.size.height *= contentScale;
     
     return rect;
-}
-
-#pragma mark -- GLKViewDelegate
-
-- (void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-    @autoreleasepool {
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        if (self.contentView) {
-            CGRect targetRect = [self convertRect:self.bounds toView:view];
-            targetRect = LF_CGRectMultiply(targetRect, view.contentScaleFactor);
-
-            /** OpenGL坐标变换 */
-            rect = LF_CGRectMultiply(rect, view.contentScaleFactor);
-            // 转换坐标
-            CGFloat tranformX = targetRect.origin.x;
-//            CGFloat tranformX = rect.size.width > targetRect.size.width ? (rect.size.width - targetRect.size.width) / 2 : targetRect.origin.x;
-            CGFloat tranformY = rect.size.height - targetRect.size.height - targetRect.origin.y; // 反转y轴的滑动方向
-            CGRect inRect = (CGRect){tranformX, tranformY, targetRect.size};
-
-            CIImage *image = [self renderedCIImageInRect:inRect];
-
-            // 优化：剪裁适合的尺寸，没有必要绘制超出rect范围的部分
-            if (inRect.size.width > rect.size.width || inRect.size.height > rect.size.height) {
-                CGFloat corpX = inRect.origin.x < 0 ? -inRect.origin.x : 0;
-                CGFloat corpY = inRect.origin.y < 0 ? -inRect.origin.y : 0;
-
-                CGFloat corpWidth = 0;
-                if (corpX > 0) {
-                    corpWidth = MIN(inRect.size.width+inRect.origin.x, rect.size.width);
-                } else {
-                    corpWidth = MIN(inRect.size.width, rect.size.width);
-                }
-                CGFloat corpHeight = 0;
-                if (corpY > 0) {
-                    corpHeight = MIN(inRect.size.height+inRect.origin.y, rect.size.height);
-                } else {
-                    corpHeight = MIN(inRect.size.height, rect.size.height);
-                }
-
-                inRect.origin.x += corpX;
-                inRect.origin.y += corpY;
-                inRect.size.width = corpWidth;
-                inRect.size.height = corpHeight;
-
-                image = [image imageByCroppingToRect:CGRectMake(corpX, corpY, corpWidth, corpHeight)];
-            }
-
-            if (image != nil) {
-                [self scaleAndResizeDrawRect:rect forCIImage:image];
-                [_context.CIContext drawImage:image inRect:inRect fromRect:image.extent];
-            }
-
-        } else {
-            rect = LF_CGRectMultiply(rect, view.contentScaleFactor);
-
-            CIImage *image = [self renderedCIImageInRect:rect];
-
-            if (image != nil) {
-                rect = [self scaleAndResizeDrawRect:rect forCIImage:image];
-                [_context.CIContext drawImage:image inRect:rect fromRect:image.extent];
-            }
-        }
-    }
 }
 
 #ifdef NSFoundationVersionNumber_iOS_9_0

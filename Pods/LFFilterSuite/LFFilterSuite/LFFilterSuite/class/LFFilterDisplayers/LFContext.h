@@ -30,11 +30,6 @@ typedef NS_ENUM(NSInteger, LFContextType) {
     LFContextTypeCoreGraphics NS_ENUM_AVAILABLE_IOS(9_0),
     
     /**
-     Create a hardware accelerated LFContext with EAGL (OpenGL)
-     */
-    LFContextTypeEAGL,
-    
-    /**
      Creates a standard LFContext hardware accelerated.
      */
     LFContextTypeLargeImage,
@@ -47,7 +42,6 @@ typedef NS_ENUM(NSInteger, LFContextType) {
 
 
 extern NSString *__nonnull const LFContextOptionsCGContextKey;
-extern NSString *__nonnull const LFContextOptionsEAGLContextKey;
 extern NSString *__nonnull const LFContextOptionsMTLDeviceKey;
 
 @interface LFContext : NSObject
@@ -61,11 +55,6 @@ extern NSString *__nonnull const LFContextOptionsMTLDeviceKey;
  The type with with which this LFContext was created
  */
 @property (readonly, nonatomic) LFContextType type;
-
-/**
- Will be non null if the type is LFContextTypeEAGL
- */
-@property (readonly, nonatomic) EAGLContext *__nullable EAGLContext;
 
 /**
  Will be non null if the type is LFContextTypeMetal

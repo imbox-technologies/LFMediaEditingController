@@ -10,10 +10,9 @@
 
 
 NSString *__nonnull const LFContextOptionsCGContextKey = @"CGContext";
-NSString *__nonnull const LFContextOptionsEAGLContextKey = @"EAGLContext";
 NSString *__nonnull const LFContextOptionsMTLDeviceKey = @"MTLDevice";
 
-static NSDictionary *LFContextCreateCIContextOptions() {
+static NSDictionary *LFContextCreateCIContextOptions(void) {
     return @{kCIContextWorkingColorSpace : [NSNull null], kCIContextOutputColorSpace : [NSNull null]};
 }
 
@@ -50,19 +49,6 @@ static NSDictionary *LFContextCreateCIContextOptions() {
     return self;
 }
 
-- (instancetype)initWithEAGLContext:(EAGLContext *)context {
-    self = [super init];
-    
-    if (self) {
-        _EAGLContext = context;
-        
-        _CIContext = [CIContext contextWithEAGLContext:_EAGLContext options:LFContextCreateCIContextOptions()];
-        _type = LFContextTypeEAGL;
-    }
-    
-    return self;
-}
-
 - (instancetype)initWithLargeImage {
     self = [self initWithSoftwareRenderer:NO];
     
@@ -92,10 +78,6 @@ static NSDictionary *LFContextCreateCIContextOptions() {
 
 - (void)dealloc
 {
-    if (_EAGLContext) {
-        [EAGLContext setCurrentContext:nil];
-        _EAGLContext = nil;
-    }
     _CGContext = nil;
     _MTLDevice = nil;
     _CIContext = nil;
@@ -109,20 +91,17 @@ static NSDictionary *LFContextCreateCIContextOptions() {
 //        return LFContextTypeMetal;
 //    } else
 //#pragma clang diagnostic pop
-    if ([self supportsType:LFContextTypeEAGL]) {
-        return LFContextTypeEAGL;
-    } else
     
-#ifdef NSFoundationVersionNumber_iOS_9_0
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
-        if ([self supportsType:LFContextTypeCoreGraphics]) {
-            return LFContextTypeCoreGraphics;
-#pragma clang diagnostic pop
-#endif
-    } else {
+//#ifdef NSFoundationVersionNumber_iOS_9_0
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wunguarded-availability"
+//        if ([self supportsType:LFContextTypeCoreGraphics]) {
+//            return LFContextTypeCoreGraphics;
+//#pragma clang diagnostic pop
+//#endif
+//    } else {
         return LFContextTypeDefault;
-    }
+//    }
 }
 
 + (BOOL)supportsType:(LFContextType)contextType {
@@ -133,8 +112,6 @@ static NSDictionary *LFContextCreateCIContextOptions() {
         case LFContextTypeMetal:
             return [CIContextClass respondsToSelector:@selector(contextWithMTLDevice:options:)] && MTLCreateSystemDefaultDevice();
 #endif
-        case LFContextTypeEAGL:
-            return [CIContextClass respondsToSelector:@selector(contextWithEAGLContext:options:)];
         case LFContextTypeCoreGraphics:
             return [CIContextClass respondsToSelector:@selector(contextWithCGContext:options:)];
         case LFContextTypeAuto:
@@ -179,22 +156,6 @@ static NSDictionary *LFContextCreateCIContextOptions() {
             return [[self alloc] initWithSoftwareRenderer:NO];
         case LFContextTypeLargeImage:
             return [[self alloc] initWithLargeImage];
-        case LFContextTypeEAGL:
-        {
-            EAGLContext *context = options[LFContextOptionsEAGLContextKey];
-            
-            if (context == nil) {
-                static dispatch_once_t onceToken;
-                static EAGLSharegroup *lf_EAGLShareGroup ;
-                dispatch_once(&onceToken, ^{
-                    lf_EAGLShareGroup = [EAGLSharegroup new];
-                    lf_EAGLShareGroup.debugLabel = @"LFContext";
-                });
-                
-                context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2 sharegroup:lf_EAGLShareGroup];
-            }
-            return [[self alloc] initWithEAGLContext:context];
-        }
         default:
             [NSException raise:@"InvalidContextType" format:@"Invalid context type %d", (int)type];
             break;
