@@ -45,6 +45,9 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
 /** 贴图 */
 @property (nonatomic, weak) LFStickerView *stickerView;
 
+@property (nonatomic, strong) UIButton *playPauseButton;
+
+@property (nonatomic, strong) UIButton *muteButton;
 
 @property (nonatomic, assign) BOOL muteOriginal;
 @property (nonatomic, strong) NSArray <NSURL *>*audioUrls;
@@ -127,6 +130,42 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
     [self.zoomingView addSubview:stickerView];
     self.stickerView = stickerView;
     
+    // Play/pause button
+    const CGFloat playPauseButtonSize = 60;
+    self.playPauseButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.playPauseButton.frame = CGRectMake(0, 0, playPauseButtonSize, playPauseButtonSize);
+    self.playPauseButton.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+    self.playPauseButton.tintColor = [UIColor whiteColor];
+    self.playPauseButton.layer.cornerRadius = playPauseButtonSize / 2.0;
+    self.playPauseButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.playPauseButton addTarget:self action:@selector(togglePlayPause) forControlEvents:UIControlEventTouchUpInside];
+    [self updatePlayPauseButton];
+    [self.zoomingView addSubview:self.playPauseButton];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.playPauseButton.centerXAnchor constraintEqualToAnchor:self.zoomingView.centerXAnchor],
+        [self.playPauseButton.centerYAnchor constraintEqualToAnchor:self.zoomingView.centerYAnchor],
+        [self.playPauseButton.widthAnchor constraintEqualToConstant:playPauseButtonSize],
+        [self.playPauseButton.heightAnchor constraintEqualToConstant:playPauseButtonSize]
+    ]];
+    
+    // Mute button
+    const CGFloat muteButtonSize = 40;
+    self.muteButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.muteButton.frame = CGRectMake(0, 0, muteButtonSize, muteButtonSize);
+    self.muteButton.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.5];
+    self.muteButton.tintColor = [UIColor whiteColor];
+    self.muteButton.layer.cornerRadius = muteButtonSize / 2.0;
+    self.muteButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.muteButton addTarget:self action:@selector(toggleMute) forControlEvents:UIControlEventTouchUpInside];
+    [self updateMuteButton];
+    [self.zoomingView addSubview:self.muteButton];
+    [NSLayoutConstraint activateConstraints:@[
+        [self.muteButton.topAnchor constraintEqualToAnchor:self.zoomingView.topAnchor constant:25],
+        [self.muteButton.leadingAnchor constraintEqualToAnchor:self.zoomingView.leadingAnchor constant:10],
+        [self.muteButton.widthAnchor constraintEqualToConstant:muteButtonSize],
+        [self.muteButton.heightAnchor constraintEqualToConstant:muteButtonSize]
+    ]];
+    
     // 实现LFEditingProtocol协议
     {
         self.lf_displayView = self.playerView;
@@ -194,6 +233,40 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
     [self setZoomScale:minimumZoomScale];
 }
 
+- (void)togglePlayPause
+{
+    if ([self isPlaying]) {
+        [self pauseVideo];
+    } else {
+        [self resumeVideo];
+    }
+    [self updatePlayPauseButton];
+}
+
+- (void)updatePlayPauseButton
+{
+    UIImage *image = [self isPlaying] ? [UIImage systemImageNamed:@"pause.fill"] : [UIImage systemImageNamed:@"play.fill"];
+    [self.playPauseButton setImage:image forState:UIControlStateNormal];
+}
+
+- (void)muteVideo
+{
+    self.videoPlayer.muteOriginalSound = YES;
+    [self updateMuteButton];
+}
+
+- (void)toggleMute
+{
+    self.videoPlayer.muteOriginalSound = !self.videoPlayer.muteOriginalSound;
+    [self updateMuteButton];
+}
+
+- (void)updateMuteButton
+{
+    UIImage *image = self.videoPlayer.muteOriginalSound ? [UIImage systemImageNamed:@"speaker.slash.fill"] : [UIImage systemImageNamed:@"speaker.2.fill"];
+    [self.muteButton setImage:image forState:UIControlStateNormal];
+}
+
 /** 保存 */
 - (void)save
 {
@@ -212,6 +285,16 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
 {
     [self.videoPlayer play];
     [self seekToTime:self.startTime];
+    [self updatePlayPauseButton];
+    if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingViewPlay:)]) {
+        [self.clipDelegate lf_videoClippingViewPlay:self];
+    }
+}
+
+- (void)resumeVideo
+{
+    [self.videoPlayer play];
+    [self updatePlayPauseButton];
     if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingViewPlay:)]) {
         [self.clipDelegate lf_videoClippingViewPlay:self];
     }
@@ -221,6 +304,7 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
 - (void)pauseVideo
 {
     [self.videoPlayer pause];
+    [self updatePlayPauseButton];
     if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingViewPause:)]) {
         [self.clipDelegate lf_videoClippingViewPause:self];
     }
@@ -358,7 +442,7 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
         _endTime = duration;
     }
     _totalDuration = duration;
-    self.videoPlayer.muteOriginalSound = self.muteOriginal;
+    [self muteVideo];
     [self playVideo];
     if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingViewReadyToPlay:)]) {
         [self.clipDelegate lf_videoClippingViewReadyToPlay:self];
@@ -372,6 +456,7 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
         [self.clipDelegate lf_videoClippingViewPlayToEndTime:self];
     }
     [self playVideo];
+    [self updatePlayPauseButton];
 }
 /** 错误回调 */
 - (void)LFVideoPlayerFailedToPrepare:(LFVideoPlayer *)player error:(NSError *)error
