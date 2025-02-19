@@ -335,17 +335,20 @@ LFPhotoEditOperationStringKey const LFPhotoEditCropExtraAspectRatioAttributeName
     [_edit_finishButton addTarget:self action:@selector(finishButtonClick) forControlEvents:UIControlEventTouchUpInside];
     [naviBar addSubview:_edit_finishButton];
     
-    CGFloat buttonSize = 40;
-    CGFloat centerX = (self.view.lfme_width - buttonSize) / 2;
-    CGFloat centerY = (naviHeight - buttonSize) / 2;
-    UIButton *hdToggleButton = [[UIButton alloc] initWithFrame:CGRectMake(centerX, centerY, buttonSize, buttonSize)];
-    hdToggleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-    NSString *imageName = self.isHDSelected ? @"deselect-hd" : @"select-hd";
-    UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [hdToggleButton setImage:image forState:UIControlStateNormal];
-    [hdToggleButton setTintColor:[UIColor whiteColor]];
-    [hdToggleButton addTarget:self action:@selector(toggleHDButton:) forControlEvents:UIControlEventTouchUpInside];
-    [naviBar addSubview:hdToggleButton];
+    BOOL isHDOptionDisabled = [[self.options objectForKey:@"_LFME_disableHDButton"] boolValue];
+    if (!isHDOptionDisabled) {
+        CGFloat buttonSize = 40;
+        CGFloat centerX = (self.view.lfme_width - buttonSize) / 2;
+        CGFloat centerY = (naviHeight - buttonSize) / 2;
+        UIButton *hdToggleButton = [[UIButton alloc] initWithFrame:CGRectMake(centerX, centerY, buttonSize, buttonSize)];
+        hdToggleButton.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
+        NSString *imageName = self.isHDSelected ? @"deselect-hd" : @"select-hd";
+        UIImage *image = [[UIImage imageNamed:imageName] imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+        [hdToggleButton setImage:image forState:UIControlStateNormal];
+        [hdToggleButton setTintColor:[UIColor whiteColor]];
+        [hdToggleButton addTarget:self action:@selector(toggleHDButton:) forControlEvents:UIControlEventTouchUpInside];
+        [naviBar addSubview:hdToggleButton];
+    }
     
     [self.view addSubview:_edit_naviBar];
 }
