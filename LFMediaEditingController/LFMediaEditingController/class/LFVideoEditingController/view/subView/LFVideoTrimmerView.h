@@ -29,10 +29,13 @@ OBJC_EXTERN NSTimeInterval lfme_videoDuration(NSTimeInterval duration);
 
 @property (nonatomic, getter=isEnabledLeftCorner) BOOL enabledLeftCorner;
 @property (nonatomic, getter=isEnabledRightCorner) BOOL enabledRightCorner;
+@property (nonatomic, getter=isScrubbingEnabled) BOOL scrubbingEnabled;
 
 /** 进度 */
 @property (nonatomic, assign) double progress;
 - (void)setHiddenProgress:(BOOL)hidden;
+- (void)setTrimControlsHidden:(BOOL)hidden;
+- (void)setTrimHandlesHidden:(BOOL)hidden;
 
 /** 重设控制区域 */
 - (void)setGridRange:(NSRange)gridRange animated:(BOOL)animated;
@@ -48,5 +51,8 @@ OBJC_EXTERN NSTimeInterval lfme_videoDuration(NSTimeInterval duration);
 - (void)lf_videoTrimmerViewDidBeginResizing:(LFVideoTrimmerView *)trimmerView gridRange:(NSRange)gridRange;
 - (void)lf_videoTrimmerViewDidResizing:(LFVideoTrimmerView *)trimmerView gridRange:(NSRange)gridRange;
 - (void)lf_videoTrimmerViewDidEndResizing:(LFVideoTrimmerView *)trimmerView gridRange:(NSRange)gridRange;
+- (void)lf_videoTrimmerViewDidBeginScrubbing:(LFVideoTrimmerView *)trimmerView;
+- (void)lf_videoTrimmerView:(LFVideoTrimmerView *)trimmerView didScrubToProgress:(double)progress;
+- (void)lf_videoTrimmerViewDidEndScrubbing:(LFVideoTrimmerView *)trimmerView;
 
 @end

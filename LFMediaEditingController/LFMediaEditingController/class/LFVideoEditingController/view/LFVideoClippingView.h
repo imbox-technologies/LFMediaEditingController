@@ -34,6 +34,7 @@
 @property (nonatomic, weak, readonly) UIView * _Nullable overlayView;
 /** 滤镜 */
 @property (nonatomic, readonly, nullable) LFFilter *filter;
+@property (nonatomic, assign) CGFloat muteButtonMinimumTopY;
 
 /** 数据 */
 - (void)setVideoAsset:(AVAsset *_Nonnull)asset placeholderImage:(UIImage *_Nonnull)image;

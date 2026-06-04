@@ -20,7 +20,7 @@
 #define kClipZoom_margin 20.f
 
 #define kVideoTrimmer_tb_margin 10.f
-#define kVideoTrimmer_lr_margin 50.f
+#define kVideoTrimmer_lr_margin 32.f
 #define kVideoTrimmer_h 80.f
 
 NSString *const kLFVideoEditingViewData = @"LFVideoEditingViewData";
@@ -109,7 +109,8 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     _clippingView = clippingView;
     
     LFVideoTrimmerView *trimmerView = [[LFVideoTrimmerView alloc] initWithFrame:CGRectMake(kVideoTrimmer_lr_margin, CGRectGetHeight(self.bounds)-kVideoTrimmer_h-self.editToolbarDefaultHeight-kVideoTrimmer_tb_margin, self.bounds.size.width-kVideoTrimmer_lr_margin*2, kVideoTrimmer_h)];
-    trimmerView.hidden = YES;
+    trimmerView.scrubbingEnabled = YES;
+    [trimmerView setTrimControlsHidden:YES];
     trimmerView.delegate = self;
     [self addSubview:trimmerView];
     _trimmerView = trimmerView;
@@ -154,6 +155,12 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     self.clippingView.cropRect = clippingRect;
 }
 
+- (void)setCustomTopbarHeight:(CGFloat)customTopbarHeight
+{
+    _customTopbarHeight = customTopbarHeight;
+    self.clippingView.muteButtonMinimumTopY = customTopbarHeight;
+}
+
 - (void)setIsClipping:(BOOL)isClipping
 {
     [self setIsClipping:isClipping animated:NO];
@@ -170,14 +177,14 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     }
     _isClipping = isClipping;
     if (isClipping) {
+        self.trimmerView.scrubbingEnabled = NO;
+        [self.trimmerView setTrimControlsHidden:NO];
         /** 动画切换 */
         if (animated) {
             self.trimmerView.hidden = NO;
-            self.trimmerView.alpha = 0.f;
             CGRect rect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.lfme_size, [self refer_clippingRect]);
             [UIView animateWithDuration:0.25f animations:^{
                 self.clippingRect = rect;
-                self.trimmerView.alpha = 1.f;
             } completion:^(BOOL finished) {
                 if (self.trimmerView.asset == nil) {
                     self.trimmerView.asset = self.asset;
@@ -192,20 +199,23 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
             }
         }
     } else {
+        self.trimmerView.scrubbingEnabled = YES;
+        BOOL hasTrimmedRange = self.clippingView.totalDuration > 0 && (self.clippingView.startTime > 0 || self.clippingView.endTime < self.clippingView.totalDuration);
+        [self.trimmerView setTrimControlsHidden:!hasTrimmedRange];
+        [self.trimmerView setTrimHandlesHidden:YES];
         /** 重置最大缩放 */
         if (animated) {
             [UIView animateWithDuration:0.25f animations:^{
                 CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.lfme_size, self.bounds);
                 self.clippingRect = cropRect;
-                self.trimmerView.alpha = 0.f;
             } completion:^(BOOL finished) {
                 self.trimmerView.alpha = 1.f;
-                self.trimmerView.hidden = YES;
+                self.trimmerView.hidden = NO;
             }];
         } else {
             CGRect cropRect = AVMakeRectWithAspectRatioInsideRect(self.clippingView.lfme_size, self.bounds);
             self.clippingRect = cropRect;
-            self.trimmerView.hidden = YES;
+            self.trimmerView.hidden = NO;
         }
     }
 }
@@ -226,6 +236,7 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     }
     self.asset = asset;
     [self.clippingView setVideoAsset:asset placeholderImage:image];
+    self.trimmerView.asset = asset;
     
 //    [self setNeedsDisplay];
 }
@@ -301,6 +312,11 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
 - (void)resetVideoDisplay
 {
     [self.clippingView resetVideoDisplay];
+}
+
+- (BOOL)isTrimmerViewDescendant:(UIView *)view
+{
+    return [view isDescendantOfView:self.trimmerView];
 }
 
 /** 导出视频 */
@@ -482,6 +498,24 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     [self.clippingView endScrubbing];
     [self.clippingView playVideo];
     [trimmerView setHiddenProgress:NO];
+}
+
+- (void)lf_videoTrimmerViewDidBeginScrubbing:(LFVideoTrimmerView *)trimmerView
+{
+    [self.clippingView pauseVideo];
+    [self.clippingView beginScrubbing];
+}
+
+- (void)lf_videoTrimmerView:(LFVideoTrimmerView *)trimmerView didScrubToProgress:(double)progress
+{
+    if (self.clippingView.totalDuration <= 0) return;
+
+    [self.clippingView seekToTime:progress * self.clippingView.totalDuration];
+}
+
+- (void)lf_videoTrimmerViewDidEndScrubbing:(LFVideoTrimmerView *)trimmerView
+{
+    [self.clippingView endScrubbing];
 }
 
 #pragma mark - LFEditingProtocol

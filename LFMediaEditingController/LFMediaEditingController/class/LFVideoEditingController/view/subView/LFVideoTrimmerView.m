@@ -35,6 +35,8 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
 
 /** 控制操作视图 */
 @property (nonatomic, weak) LFVideoTrimmerGridView *gridView;
+@property (nonatomic, strong) UIPanGestureRecognizer *scrubbingPanGestureRecognizer;
+@property (nonatomic, strong) UITapGestureRecognizer *scrubbingTapGestureRecognizer;
 
 /** 视频总时长 */
 @property (nonatomic, assign) double totalDuration;
@@ -93,6 +95,14 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
     gridView.delegate = self;
     [self addSubview:gridView];
     _gridView = gridView;
+
+    _scrubbingPanGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(scrubbingPanGesture:)];
+    _scrubbingPanGestureRecognizer.enabled = NO;
+    [self addGestureRecognizer:_scrubbingPanGestureRecognizer];
+
+    _scrubbingTapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(scrubbingTapGesture:)];
+    _scrubbingTapGestureRecognizer.enabled = NO;
+    [self addGestureRecognizer:_scrubbingTapGestureRecognizer];
 }
 
 - (UILabel *)timeLabel
@@ -176,6 +186,86 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
 - (void)setHiddenProgress:(BOOL)hidden
 {
     [self.gridView setHiddenProgress:hidden];
+}
+
+- (void)setTrimControlsHidden:(BOOL)hidden
+{
+    [self.gridView setTrimControlsHidden:hidden];
+}
+
+- (void)setTrimHandlesHidden:(BOOL)hidden
+{
+    [self.gridView setTrimHandlesHidden:hidden];
+}
+
+- (void)setScrubbingEnabled:(BOOL)scrubbingEnabled
+{
+    _scrubbingEnabled = scrubbingEnabled;
+    self.scrubbingPanGestureRecognizer.enabled = scrubbingEnabled;
+    self.scrubbingTapGestureRecognizer.enabled = scrubbingEnabled;
+}
+
+- (void)scrubbingTapGesture:(UITapGestureRecognizer *)gestureRecognizer
+{
+    if (gestureRecognizer.state != UIGestureRecognizerStateEnded) {
+        return;
+    }
+
+    [self notifyDidBeginScrubbing];
+    [self scrubToPoint:[gestureRecognizer locationInView:self.gridView]];
+    [self notifyDidEndScrubbing];
+}
+
+- (void)scrubbingPanGesture:(UIPanGestureRecognizer *)gestureRecognizer
+{
+    switch (gestureRecognizer.state) {
+        case UIGestureRecognizerStateBegan:
+            [self notifyDidBeginScrubbing];
+            [self scrubToPoint:[gestureRecognizer locationInView:self.gridView]];
+            break;
+        case UIGestureRecognizerStateChanged:
+            [self scrubToPoint:[gestureRecognizer locationInView:self.gridView]];
+            break;
+        case UIGestureRecognizerStateEnded:
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+            [self notifyDidEndScrubbing];
+            break;
+        default:
+            break;
+    }
+}
+
+- (void)scrubToPoint:(CGPoint)point
+{
+    CGFloat width = CGRectGetWidth(self.gridView.bounds);
+    if (width <= 0) return;
+
+    CGFloat progressX = MIN(MAX(point.x, 0), width);
+    CGRect gridRect = self.gridView.gridRect;
+    if (!CGRectIsEmpty(gridRect) && CGRectGetWidth(gridRect) < width) {
+        progressX = MIN(MAX(progressX, CGRectGetMinX(gridRect)), CGRectGetMaxX(gridRect));
+    }
+
+    double progress = progressX / width;
+    self.progress = progress;
+    if ([self.delegate respondsToSelector:@selector(lf_videoTrimmerView:didScrubToProgress:)]) {
+        [self.delegate lf_videoTrimmerView:self didScrubToProgress:progress];
+    }
+}
+
+- (void)notifyDidBeginScrubbing
+{
+    if ([self.delegate respondsToSelector:@selector(lf_videoTrimmerViewDidBeginScrubbing:)]) {
+        [self.delegate lf_videoTrimmerViewDidBeginScrubbing:self];
+    }
+}
+
+- (void)notifyDidEndScrubbing
+{
+    if ([self.delegate respondsToSelector:@selector(lf_videoTrimmerViewDidEndScrubbing:)]) {
+        [self.delegate lf_videoTrimmerViewDidEndScrubbing:self];
+    }
 }
 
 /** 重设控制区域 */

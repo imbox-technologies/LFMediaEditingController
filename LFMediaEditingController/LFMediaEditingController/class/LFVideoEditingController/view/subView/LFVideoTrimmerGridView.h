@@ -26,6 +26,8 @@
 /** 进度 */
 @property (nonatomic, assign) double progress;
 - (void)setHiddenProgress:(BOOL)hidden;
+- (void)setTrimControlsHidden:(BOOL)hidden;
+- (void)setTrimHandlesHidden:(BOOL)hidden;
 
 @property (nonatomic, weak) id<LFVideoTrimmerGridViewDelegate> delegate;
 

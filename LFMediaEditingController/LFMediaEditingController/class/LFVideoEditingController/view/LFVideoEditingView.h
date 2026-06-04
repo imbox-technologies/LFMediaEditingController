@@ -32,6 +32,7 @@
 
 /** 播放速率 (0.5~2.0) 值为0则禁止播放，默认1 */
 @property (nonatomic, assign) float rate;
+@property (nonatomic, assign) CGFloat customTopbarHeight;
 
 /** 取消剪辑 */
 - (void)cancelClipping:(BOOL)animated;
@@ -48,6 +49,7 @@
 - (void)pauseVideo;
 /** 重置视频 */
 - (void)resetVideoDisplay;
+- (BOOL)isTrimmerViewDescendant:(UIView *)view;
 
 @end
 

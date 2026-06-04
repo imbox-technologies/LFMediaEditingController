@@ -29,6 +29,8 @@ NSString *const kLFVideoCLippingViewData_draw = @"LFVideoCLippingViewData_draw";
 NSString *const kLFVideoCLippingViewData_sticker = @"LFVideoCLippingViewData_sticker";
 NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filter";
 
+static CGFloat const kLFVideoMuteButtonMargin = 10.f;
+
 @interface LFVideoClippingView () <LFVideoPlayerDelegate, UIScrollViewDelegate>
 
 @property (nonatomic, weak) LFDataFilterVideoView *playerView;
@@ -48,6 +50,7 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
 @property (nonatomic, strong) UIButton *playPauseButton;
 
 @property (nonatomic, strong) UIButton *muteButton;
+@property (nonatomic, strong) NSLayoutConstraint *muteButtonTopConstraint;
 
 @property (nonatomic, assign) BOOL muteOriginal;
 @property (nonatomic, strong) NSArray <NSURL *>*audioUrls;
@@ -159,9 +162,10 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
     [self.muteButton addTarget:self action:@selector(toggleMute) forControlEvents:UIControlEventTouchUpInside];
     [self updateMuteButton];
     [self.zoomingView addSubview:self.muteButton];
+    self.muteButtonTopConstraint = [self.muteButton.topAnchor constraintEqualToAnchor:self.zoomingView.topAnchor constant:kLFVideoMuteButtonMargin];
     [NSLayoutConstraint activateConstraints:@[
-        [self.muteButton.topAnchor constraintEqualToAnchor:self.zoomingView.topAnchor constant:25],
-        [self.muteButton.leadingAnchor constraintEqualToAnchor:self.zoomingView.leadingAnchor constant:10],
+        self.muteButtonTopConstraint,
+        [self.muteButton.leadingAnchor constraintEqualToAnchor:self.zoomingView.leadingAnchor constant:kLFVideoMuteButtonMargin],
         [self.muteButton.widthAnchor constraintEqualToConstant:muteButtonSize],
         [self.muteButton.heightAnchor constraintEqualToConstant:muteButtonSize]
     ]];
@@ -215,6 +219,8 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
     [[self.zoomingView subviews] enumerateObjectsUsingBlock:^(__kindof UIView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         obj.frame = self.zoomingView.bounds;
     }];
+
+    [self updateMuteButtonTopConstraint];
 }
 
 - (void)setCropRect:(CGRect)cropRect
@@ -231,6 +237,23 @@ NSString *const kLFVideoCLippingViewData_filter = @"LFVideoCLippingViewData_filt
     self.maximumZoomScale = minimumZoomScale;
     
     [self setZoomScale:minimumZoomScale];
+    [self updateMuteButtonTopConstraint];
+}
+
+- (void)setMuteButtonMinimumTopY:(CGFloat)muteButtonMinimumTopY
+{
+    _muteButtonMinimumTopY = muteButtonMinimumTopY;
+    [self updateMuteButtonTopConstraint];
+}
+
+- (void)updateMuteButtonTopConstraint
+{
+    CGFloat topConstant = kLFVideoMuteButtonMargin;
+    if (self.muteButtonMinimumTopY > 0) {
+        CGFloat zoomingViewTopY = self.lfme_y + self.zoomingView.lfme_y;
+        topConstant = MAX(topConstant, self.muteButtonMinimumTopY + kLFVideoMuteButtonMargin - zoomingViewTopY);
+    }
+    self.muteButtonTopConstraint.constant = topConstant;
 }
 
 - (void)togglePlayPause

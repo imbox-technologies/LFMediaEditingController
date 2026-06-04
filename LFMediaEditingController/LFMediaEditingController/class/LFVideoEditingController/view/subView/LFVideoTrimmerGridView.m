@@ -213,6 +213,20 @@ const CGFloat kVideoTrimmerGridLayerLineWidth = 2.f;
     _slider.hidden = hidden;
 }
 
+- (void)setTrimControlsHidden:(BOOL)hidden
+{
+    [self setTrimHandlesHidden:hidden];
+    self.gridLayer.hidden = hidden;
+    self.gridMaskLayer.hidden = hidden;
+}
+
+- (void)setTrimHandlesHidden:(BOOL)hidden
+{
+    self.leftCornerView.hidden = hidden;
+    self.rightCornerView.hidden = hidden;
+    self.centerCornerView.hidden = hidden;
+}
+
 #pragma mark - lf_resizeConrolDelegate
 
 - (void)lf_resizeConrolDidBeginResizing:(LFResizeControl *)resizeConrol

@@ -171,6 +171,7 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
     } else {
         _edit_naviBar.lfme_height = kCustomTopbarHeight;
     }
+    _EditingView.customTopbarHeight = _edit_naviBar.lfme_height;
 }
 
 - (void)viewDidLayoutSubviews
@@ -349,6 +350,7 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
     }
     
     [self.view addSubview:_edit_naviBar];
+    _EditingView.customTopbarHeight = _edit_naviBar.lfme_height;
 }
 
 - (void)configBottomToolBar
@@ -598,6 +600,10 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch
 {
+    if ([_EditingView isTrimmerViewDescendant:touch.view]) {
+        return NO;
+    }
+
     if ([touch.view isDescendantOfView:_EditingView]) {
         return YES;
     }
