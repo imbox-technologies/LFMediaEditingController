@@ -393,14 +393,15 @@ inline static NSDictionary *lf_assetExportAudioConfig(void)
     [self beginReadWriteOnAudio];
     [self beginReadWriteOnVideo];
     
-    dispatch_group_notify(_dispatchGroup, dispatch_get_main_queue(), ^{
+    dispatch_queue_t completionQueue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_group_notify(_dispatchGroup, completionQueue, ^{
         if (self->_error == nil) {
             self->_error = self.writer.error;
         }
         
         if (self->_error == nil && self.writer.status != AVAssetWriterStatusCancelled) {
             [self.writer finishWritingWithCompletionHandler:^{
-                dispatch_async(dispatch_get_main_queue(), ^{
+                dispatch_async(completionQueue, ^{
                     self->_error = self.writer.error;
                     [self complete];
                 });
