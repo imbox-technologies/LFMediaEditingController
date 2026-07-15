@@ -11,6 +11,8 @@
 #import "LFScrollView.h"
 #import "LFEditingProtocol.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class LFFilter;
 
 @protocol LFVideoClippingViewDelegate;
@@ -70,6 +72,8 @@
 - (void)seekToTime:(CGFloat)time;
 - (void)endScrubbing;
 
+- (BOOL)isOriginalVideoMuted;
+
 @end
 
 @protocol LFVideoClippingViewDelegate <NSObject>
@@ -92,3 +96,5 @@
 - (void)lf_videoClippingViewPlayToEndTime:(LFVideoClippingView *_Nonnull)clippingView;
 
 @end
+
+NS_ASSUME_NONNULL_END

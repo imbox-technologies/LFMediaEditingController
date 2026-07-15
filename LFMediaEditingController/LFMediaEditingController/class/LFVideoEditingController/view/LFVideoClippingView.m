@@ -272,16 +272,15 @@ static CGFloat const kLFVideoMuteButtonMargin = 10.f;
     [self.playPauseButton setImage:image forState:UIControlStateNormal];
 }
 
-- (void)muteVideo
-{
-    self.videoPlayer.muteOriginalSound = YES;
-    [self updateMuteButton];
-}
-
 - (void)toggleMute
 {
     self.videoPlayer.muteOriginalSound = !self.videoPlayer.muteOriginalSound;
     [self updateMuteButton];
+}
+
+- (BOOL)isOriginalVideoMuted
+{
+    return self.videoPlayer.muteOriginalSound;
 }
 
 - (void)updateMuteButton
@@ -374,6 +373,7 @@ static CGFloat const kLFVideoMuteButtonMargin = 10.f;
     [self.videoPlayer pause];
     [self.videoPlayer resetDisplay];
     [self seekToTime:self.startTime];
+    [self updatePlayPauseButton];
     if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingViewPause:)]) {
         [self.clipDelegate lf_videoClippingViewPause:self];
     }
@@ -465,8 +465,9 @@ static CGFloat const kLFVideoMuteButtonMargin = 10.f;
         _endTime = duration;
     }
     _totalDuration = duration;
-    [self muteVideo];
-    [self playVideo];
+    [self muteOriginalVideo:self.muteOriginal];
+    [self updateMuteButton];
+    [self pauseVideo];
     if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingViewReadyToPlay:)]) {
         [self.clipDelegate lf_videoClippingViewReadyToPlay:self];
     }

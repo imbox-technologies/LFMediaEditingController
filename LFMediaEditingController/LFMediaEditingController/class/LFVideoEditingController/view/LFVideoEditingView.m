@@ -170,7 +170,7 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     /** 获取总时长才进行记录，否则等待总时长获取后再操作 */
     if (self.clippingView.totalDuration) {
         [self.clippingView save];
-        [self.clippingView replayVideo];
+        [self.clippingView resetVideoDisplay];
         CGFloat x = self.clippingView.startTime/self.clippingView.totalDuration*self.trimmerView.lfme_width;
         CGFloat width = self.clippingView.endTime/self.clippingView.totalDuration*self.trimmerView.lfme_width-x;
         [self.trimmerView setGridRange:NSMakeRange(x, width) animated:NO];
@@ -382,15 +382,13 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     // 速率
     self.exportSession.rate = self.rate;
     // 音频
-    NSMutableArray *audioUrls = [@[] mutableCopy];
+    NSMutableArray<NSURL *> *audioUrls = [@[] mutableCopy];
     for (LFAudioItem *item in self.audioUrls) {
         if (item.isEnable && item.url) {
             [audioUrls addObject:item.url];
         }
-        if (item.isOriginal) {
-            self.exportSession.isOrignalSound = item.isEnable;
-        }
     }
+    self.exportSession.isOrignalSound = ![self.clippingView isOriginalVideoMuted];
     self.exportSession.audioUrls = audioUrls;
     
     [self.exportSession exportAsynchronouslyWithCompletionHandler:^(NSError *error) {
@@ -496,7 +494,6 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
 {
     trimmerView.progress = self.clippingView.startTime/self.clippingView.totalDuration;
     [self.clippingView endScrubbing];
-    [self.clippingView playVideo];
     [trimmerView setHiddenProgress:NO];
 }
 
@@ -528,11 +525,13 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     if (subData) [data setObject:subData forKey:kLFVideoEditingViewData_clipping];
     
     if (self.audioUrls.count) {
-        NSMutableArray *audioDatas = [@[] mutableCopy];
+        NSMutableArray<NSDictionary<NSString *, id> *> *audioDatas = [@[] mutableCopy];
         BOOL hasOriginal = NO;
+        BOOL originalAudioEnabled = ![self.clippingView isOriginalVideoMuted];
         for (LFAudioItem *item in self.audioUrls) {
             
-            NSMutableDictionary *myData = [@{} mutableCopy];
+            BOOL audioEnabled = item.isOriginal ? originalAudioEnabled : item.isEnable;
+            NSMutableDictionary<NSString *, id> *myData = [@{} mutableCopy];
             if (item.title) {
                 [myData setObject:item.title forKey:kLFVideoEditingViewData_audioTitle];
             }
@@ -540,13 +539,13 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
                 [myData setObject:item.url forKey:kLFVideoEditingViewData_audioUrl];
             }
             [myData setObject:@(item.isOriginal) forKey:kLFVideoEditingViewData_audioOriginal];
-            [myData setObject:@(item.isEnable) forKey:kLFVideoEditingViewData_audioEnable];
+            [myData setObject:@(audioEnabled) forKey:kLFVideoEditingViewData_audioEnable];
             
             /** 忽略没有启用的音频 */
 //            if (item.isEnable || item.isOriginal) {
 //                [audioDatas addObject:myData];
 //            }
-            if (item.isOriginal && item.isEnable) {
+            if (item.isOriginal && audioEnabled) {
                 hasOriginal = YES;
             }
             [audioDatas addObject:myData];
