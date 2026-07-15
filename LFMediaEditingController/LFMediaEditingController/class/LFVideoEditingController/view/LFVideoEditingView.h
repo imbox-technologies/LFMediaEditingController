@@ -64,6 +64,7 @@
 - (void)lf_videoEditingViewPause:(LFVideoEditingView *)editingView;
 /** 播放完毕 */
 - (void)lf_videoEditingViewPlayToEndTime:(LFVideoEditingView *)editingView;
+- (void)lf_videoEditingView:(LFVideoEditingView *)editingView didChangeOriginalVideoMuted:(BOOL)muted;
 
 @end
 

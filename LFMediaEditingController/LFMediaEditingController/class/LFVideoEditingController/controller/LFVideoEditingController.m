@@ -12,6 +12,8 @@
 #import "UIImage+LFMECommon.h"
 #import "LFMediaEditingType.h"
 #import "LFMECancelBlock.h"
+#import "UIView+Toast.h"
+#import "UIColor+Palette.h"
 
 #import "LFVideoEditingView.h"
 #import "LFEditToolbar.h"
@@ -24,6 +26,10 @@
 #import "AVAsset+LFMECommon.h"
 
 #import "NSObject+LFTipsGuideView.h"
+
+static const NSTimeInterval kAudioMutedToastDuration = 1.5;
+static const CGFloat kAudioMutedToastBottomMargin = 16.0;
+static const CGFloat kAudioMutedToastCornerRadius = 16.0;
 
 /************************ Attributes ************************/
 /** NSNumber containing LFVideoEditOperationSubType, default 0 */
@@ -945,6 +951,23 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
 - (void)lf_videoEditingViewFailedToPrepare:(LFVideoEditingView *)editingView error:(NSError *)error
 {
     [self showErrorMessage:error.localizedDescription];
+}
+
+- (void)lf_videoEditingView:(LFVideoEditingView *)editingView didChangeOriginalVideoMuted:(BOOL)muted
+{
+    if (!muted) return;
+
+    NSString *message = [NSBundle LFME_localizedStringForKey:@"_LFME_videoWillBeSentWithoutAudioMessage"];
+    CSToastStyle *style = [[CSToastStyle alloc] initWithDefaultStyle];
+    style.backgroundColor = [UIColor sb_videoEditorToastBackgroundColor];
+    style.messageColor = [UIColor sb_textOnLightBackgroundColor];
+    style.messageAlignment = NSTextAlignmentCenter;
+    style.cornerRadius = kAudioMutedToastCornerRadius;
+    UIView *toast = [self.view toastViewForMessage:message title:nil image:nil style:style];
+    CGFloat toastCenterY = CGRectGetMinY(_edit_toolBar.frame) - kAudioMutedToastBottomMargin - CGRectGetHeight(toast.bounds) / 2.0;
+    NSValue *position = [NSValue valueWithCGPoint:CGPointMake(CGRectGetMidX(self.view.bounds), toastCenterY)];
+    [self.view hideAllToasts];
+    [self.view showToast:toast duration:kAudioMutedToastDuration position:position completion:nil];
 }
 
 #pragma mark - private

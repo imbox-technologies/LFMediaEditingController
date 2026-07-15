@@ -467,6 +467,13 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
     }
 }
 
+- (void)lf_videoClippingView:(LFVideoClippingView *)clippingView didChangeOriginalVideoMuted:(BOOL)muted
+{
+    if ([self.playerDelegate respondsToSelector:@selector(lf_videoEditingView:didChangeOriginalVideoMuted:)]) {
+        [self.playerDelegate lf_videoEditingView:self didChangeOriginalVideoMuted:muted];
+    }
+}
+
 #pragma mark - LFVideoTrimmerViewDelegate
 - (void)lf_videoTrimmerViewDidBeginResizing:(LFVideoTrimmerView *)trimmerView gridRange:(NSRange)gridRange
 {

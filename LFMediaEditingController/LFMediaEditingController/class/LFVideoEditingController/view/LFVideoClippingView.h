@@ -94,6 +94,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)lf_videoClippingViewPause:(LFVideoClippingView *_Nonnull)clippingView;
 /** 播放完毕 */
 - (void)lf_videoClippingViewPlayToEndTime:(LFVideoClippingView *_Nonnull)clippingView;
+- (void)lf_videoClippingView:(LFVideoClippingView *)clippingView didChangeOriginalVideoMuted:(BOOL)muted;
 
 @end
 

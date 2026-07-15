@@ -276,6 +276,9 @@ static CGFloat const kLFVideoMuteButtonMargin = 10.f;
 {
     self.videoPlayer.muteOriginalSound = !self.videoPlayer.muteOriginalSound;
     [self updateMuteButton];
+    if ([self.clipDelegate respondsToSelector:@selector(lf_videoClippingView:didChangeOriginalVideoMuted:)]) {
+        [self.clipDelegate lf_videoClippingView:self didChangeOriginalVideoMuted:self.videoPlayer.muteOriginalSound];
+    }
 }
 
 - (BOOL)isOriginalVideoMuted

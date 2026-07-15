@@ -12,6 +12,7 @@
 "_LFME_processHintStr" = "Processing...";
 
 "_LFME_reachMaximumLimitTitle" = "Input limit reached";
+"_LFME_videoWillBeSentWithoutAudioMessage" = "The video will be sent without audio";
 
 "_LFME_stickerDefault" = "Stickers";
 "_LFME_stickerPhotoAlbum" = "Photos";
