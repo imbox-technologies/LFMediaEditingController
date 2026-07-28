@@ -30,8 +30,7 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
 @property (nonatomic, weak) UILabel *startTimeLabel;
 /** 结束时间 */
 @property (nonatomic, weak) UILabel *endTimeLabel;
-/** 总时间 */
-@property (nonatomic, weak) UILabel *totalTimeLabel;
+@property (nonatomic, weak) UILabel *currentTimeLabel;
 
 /** 控制操作视图 */
 @property (nonatomic, weak) LFVideoTrimmerGridView *gridView;
@@ -74,14 +73,14 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
     [self addSubview:endTimeLabel];
     _endTimeLabel = endTimeLabel;
     
-    UILabel *totalTimeLabel = [self timeLabel];
+    UILabel *currentTimeLabel = [self timeLabel];
     timeLabelRect.origin.x = (CGRectGetWidth(self.frame)-timeLabelRect.size.width)/2;
     timeLabelRect.origin.y = CGRectGetHeight(self.frame)-timeLabelRect.size.height;
-    totalTimeLabel.frame = timeLabelRect;
-    totalTimeLabel.textAlignment = NSTextAlignmentCenter;
-    totalTimeLabel.text = NSLocalizedString(@"00:00", nil);
-    [self addSubview:totalTimeLabel];
-    _totalTimeLabel = totalTimeLabel;
+    currentTimeLabel.frame = timeLabelRect;
+    currentTimeLabel.textAlignment = NSTextAlignmentCenter;
+    currentTimeLabel.text = NSLocalizedString(@"00:00", nil);
+    [self addSubview:currentTimeLabel];
+    _currentTimeLabel = currentTimeLabel;
     
     
     /** 每帧图片的容器 */
@@ -176,6 +175,7 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
 - (void)setProgress:(double)progress
 {
     self.gridView.progress = progress;
+    [self updateCurrentTimeLabel];
 }
 
 - (double)progress
@@ -203,6 +203,7 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
     _scrubbingEnabled = scrubbingEnabled;
     self.scrubbingPanGestureRecognizer.enabled = scrubbingEnabled;
     self.scrubbingTapGestureRecognizer.enabled = scrubbingEnabled;
+    self.currentTimeLabel.hidden = !scrubbingEnabled;
 }
 
 - (void)scrubbingTapGesture:(UITapGestureRecognizer *)gestureRecognizer
@@ -310,6 +311,7 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
     
     CMTime duration = _asset.duration;
     self.totalDuration = CMTimeGetSeconds(duration);
+    [self updateCurrentTimeLabel];
     [self calcTime];
     
     NSInteger index = maxImageCount;
@@ -368,8 +370,18 @@ NSTimeInterval lfme_videoDuration(NSTimeInterval duration)
         
         self.startTimeLabel.text = [LFVideoTrimmerView getMMSSWithSecond:startTime];
         self.endTimeLabel.text = [LFVideoTrimmerView getMMSSWithSecond:endTime];
-        self.totalTimeLabel.text = [LFVideoTrimmerView getMMSSWithSecond:endTime-startTime];
     }
+}
+
+- (void)updateCurrentTimeLabel
+{
+    if (!isfinite(self.totalDuration) || self.totalDuration <= 0) {
+        self.currentTimeLabel.text = NSLocalizedString(@"00:00", nil);
+        return;
+    }
+
+    NSTimeInterval currentTime = MIN(MAX(self.progress * self.totalDuration, 0), self.totalDuration);
+    self.currentTimeLabel.text = [LFVideoTrimmerView getMMSSWithSecond:(NSInteger)currentTime];
 }
 
 + (NSString *)getMMSSWithSecond:(NSInteger)second{
