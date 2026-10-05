@@ -13,6 +13,16 @@
 #import "UIViewController+LFPresentation.h"
 
 #import "LFBrushCache.h"
+#import "FontUtils.h"
+#import "SBCircularProgressView.h"
+#import "UIColor+Palette.h"
+
+static const CGFloat kProgressHUDCircularContainerWidth = 174.0;
+static const CGFloat kProgressHUDCircularContainerHeight = 142.0;
+static const CGFloat kProgressHUDCircularProgressSize = 68.0;
+static const CGFloat kProgressHUDCircularProgressLineWidth = 5.0;
+static const CGFloat kProgressHUDCircularCornerRadius = 30.0;
+static const CGFloat kProgressHUDCircularBackgroundAlpha = 0.85;
 
 @interface LFBaseEditingController ()
 {
@@ -21,7 +31,9 @@
     UIView *_HUDContainer;
     UIActivityIndicatorView *_HUDIndicatorView;
     UILabel *_HUDLabel;
-    UIProgressView *_ProgressView;
+    UIView *_progressHUDContainer;
+    SBCircularProgressView *_circularProgressView;
+    UILabel *_progressHUDLabel;
     
 }
 /** 默认编辑屏幕方向 */
@@ -165,7 +177,7 @@
     if (_progressHUD) {
         [_HUDIndicatorView stopAnimating];
         [_progressHUD removeFromSuperview];
-        [_ProgressView setProgress:0.f];
+        [_circularProgressView setProgress:0.0 animated:NO];
     }
 }
 
@@ -176,7 +188,14 @@
 
 - (void)setProgress:(float)progress
 {
-    [_ProgressView setProgress:progress animated:YES];
+    dispatch_block_t update = ^{
+        [self->_circularProgressView setProgress:progress animated:YES];
+    };
+    if ([NSThread isMainThread]) {
+        update();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), update);
+    }
 }
 
 - (void)showInfoMessage:(NSString *)text
@@ -226,18 +245,55 @@
         [_progressHUD addSubview:_HUDContainer];
     }
     if (needProcess) {
-        _HUDContainer.frame = CGRectMake(([[UIScreen mainScreen] bounds].size.width - 120) / 2, ([[UIScreen mainScreen] bounds].size.height - 90) / 2, 120.f, 100.f);
-        if (!_ProgressView) {
-            _ProgressView = [[UIProgressView alloc] initWithFrame:CGRectMake(10.f, CGRectGetMaxY(_HUDLabel.frame), CGRectGetWidth(_HUDContainer.frame)-20.f, 2.5f)];
-            [_HUDContainer addSubview:_ProgressView];
-        }
+        [self setupCircularProgressHUDIfNeeded];
+        _progressHUDLabel.text = text ? text : [NSBundle LFME_localizedStringForKey:@"_LFME_processHintStr"];
+    } else {
+        _HUDLabel.text = text ? text : [NSBundle LFME_localizedStringForKey:@"_LFME_processHintStr"];
+        [_HUDIndicatorView startAnimating];
     }
+    _HUDContainer.hidden = needProcess;
+    _progressHUDContainer.hidden = !needProcess;
     
-    _HUDLabel.text = text ? text : [NSBundle LFME_localizedStringForKey:@"_LFME_processHintStr"];
-    
-    [_HUDIndicatorView startAnimating];
     UIView *view = isTop ? [[UIApplication sharedApplication] keyWindow] : self.view;
     [view addSubview:_progressHUD];
+}
+
+- (void)setupCircularProgressHUDIfNeeded
+{
+    if (_progressHUDContainer) {
+        return;
+    }
+
+    CGRect screenBounds = [UIScreen mainScreen].bounds;
+    _progressHUDContainer = [[UIView alloc] init];
+    _progressHUDContainer.frame = CGRectMake((CGRectGetWidth(screenBounds) - kProgressHUDCircularContainerWidth) / 2,
+                                             (CGRectGetHeight(screenBounds) - kProgressHUDCircularContainerHeight) / 2,
+                                             kProgressHUDCircularContainerWidth,
+                                             kProgressHUDCircularContainerHeight);
+    _progressHUDContainer.backgroundColor = [[UIColor darkGrayColor] colorWithAlphaComponent:kProgressHUDCircularBackgroundAlpha];
+    _progressHUDContainer.overrideUserInterfaceStyle = UIUserInterfaceStyleDark;
+    _progressHUDContainer.layer.cornerRadius = kProgressHUDCircularCornerRadius;
+    _progressHUDContainer.layer.cornerCurve = kCACornerCurveContinuous;
+    _progressHUDContainer.clipsToBounds = YES;
+
+    UIFont *percentageFont = [UIFont monospacedDigitSystemFontOfSize:[FontUtils adaptedFontSizeWithDefault:15.0]
+                                                              weight:UIFontWeightSemibold];
+    _circularProgressView = [[SBCircularProgressView alloc] initWithLineWidth:kProgressHUDCircularProgressLineWidth
+                                                              percentageFont:percentageFont];
+    _circularProgressView.frame = CGRectMake((kProgressHUDCircularContainerWidth - kProgressHUDCircularProgressSize) / 2,
+                                             18.0,
+                                             kProgressHUDCircularProgressSize,
+                                             kProgressHUDCircularProgressSize);
+
+    _progressHUDLabel = [[UILabel alloc] initWithFrame:CGRectMake(12.0, 99.0, kProgressHUDCircularContainerWidth - 24.0, 24.0)];
+    _progressHUDLabel.textAlignment = NSTextAlignmentCenter;
+    _progressHUDLabel.font = [UIFont systemFontOfSize:[FontUtils adaptedFontSizeWithDefault:14.0]
+                                               weight:UIFontWeightSemibold];
+    _progressHUDLabel.textColor = [UIColor sb_titleOnDarkColor];
+
+    [_progressHUDContainer addSubview:_circularProgressView];
+    [_progressHUDContainer addSubview:_progressHUDLabel];
+    [_progressHUD addSubview:_progressHUDContainer];
 }
 
 @end

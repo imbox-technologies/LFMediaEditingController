@@ -47,6 +47,7 @@
 - (void)playVideo;
 /** 暂停 */
 - (void)pauseVideo;
+- (void)setPlayPauseButtonHidden:(BOOL)hidden;
 /** 重置视频 */
 - (void)resetVideoDisplay;
 - (BOOL)isTrimmerViewDescendant:(UIView *)view;
@@ -67,4 +68,3 @@
 - (void)lf_videoEditingView:(LFVideoEditingView *)editingView didChangeOriginalVideoMuted:(BOOL)muted;
 
 @end
-

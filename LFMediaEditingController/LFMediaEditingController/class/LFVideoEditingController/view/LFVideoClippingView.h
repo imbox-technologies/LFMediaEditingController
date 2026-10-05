@@ -56,6 +56,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)playVideo;
 /** 暂停 */
 - (void)pauseVideo;
+- (void)setPlayPauseButtonHidden:(BOOL)hidden;
 /** 静音原音 */
 - (void)muteOriginalVideo:(BOOL)mute;
 /** 是否播放 */

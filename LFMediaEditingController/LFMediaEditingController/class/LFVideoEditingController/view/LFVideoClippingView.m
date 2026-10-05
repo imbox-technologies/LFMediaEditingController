@@ -272,6 +272,11 @@ static CGFloat const kLFVideoMuteButtonMargin = 10.f;
     [self.playPauseButton setImage:image forState:UIControlStateNormal];
 }
 
+- (void)setPlayPauseButtonHidden:(BOOL)hidden
+{
+    self.playPauseButton.hidden = hidden;
+}
+
 - (void)toggleMute
 {
     self.videoPlayer.muteOriginalSound = !self.videoPlayer.muteOriginalSound;

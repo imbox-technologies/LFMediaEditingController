@@ -30,6 +30,7 @@
 static const NSTimeInterval kAudioMutedToastDuration = 1.5;
 static const CGFloat kAudioMutedToastBottomMargin = 16.0;
 static const CGFloat kAudioMutedToastCornerRadius = 16.0;
+static const float kTrimProgressFraction = 0.5f;
 
 /************************ Attributes ************************/
 /** NSNumber containing LFVideoEditOperationSubType, default 0 */
@@ -553,44 +554,84 @@ LFVideoEditOperationStringKey const LFVideoEditClipMaxDurationAttributeName = @"
 
 - (void)finishButtonClick
 {
+    [_EditingView setPlayPauseButtonHidden:YES];
     [self showProgressVideoHUD];
     /** 取消贴图激活 */
     [_EditingView stickerDeactivated];
     /** 处理编辑图片 */
-    __block LFVideoEdit *videoEdit = nil;
     NSDictionary *data = [_EditingView photoEditData];
+    BOOL awaitsPostProcessing = [self.delegate respondsToSelector:@selector(lf_VideoEditingController:didFinishPhotoEdit:processingProgress:processingCompletion:)];
+    float trimProgressFraction = awaitsPostProcessing ? kTrimProgressFraction : 1.0f;
     __weak typeof(self) weakSelf = self;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         if (data) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 [strongSelf->_EditingView exportAsynchronouslyWithTrimVideo:^(NSURL *trimURL, NSError *error) {
-                    if (error) {
-                        [weakSelf showErrorMessage:error.description];
-                    } else {
-                        videoEdit = [[LFVideoEdit alloc] initWithEditAsset:weakSelf.asset editFinalURL:trimURL data:data];
-                        [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
-                        if ([weakSelf.delegate respondsToSelector:@selector(lf_VideoEditingController:didFinishPhotoEdit:)]) {
-                            [weakSelf.delegate lf_VideoEditingController:weakSelf didFinishPhotoEdit:videoEdit];
-                        }                        
+                    __strong typeof(weakSelf) innerSelf = weakSelf;
+                    if (!innerSelf) {
+                        return;
                     }
-                    [weakSelf hideProgressHUD];
+                    if (error) {
+                        [innerSelf showErrorMessage:error.description];
+                        [innerSelf hideProgressHUD];
+                        [innerSelf->_EditingView setPlayPauseButtonHidden:NO];
+                    } else {
+                        [innerSelf setProgress:trimProgressFraction];
+                        LFVideoEdit *videoEdit = [[LFVideoEdit alloc] initWithEditAsset:innerSelf.asset editFinalURL:trimURL data:data];
+                        [innerSelf completeVideoEditingWithEdit:videoEdit awaitsPostProcessing:awaitsPostProcessing];
+                    }
                 } progress:^(float progress) {
-                    [weakSelf setProgress:progress];
+                    [weakSelf setProgress:progress * trimProgressFraction];
                 }];
             });
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong typeof(weakSelf) strongSelf = weakSelf;
                 [strongSelf->_EditingView pauseVideo];
-                [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
-                if ([weakSelf.delegate respondsToSelector:@selector(lf_VideoEditingController:didFinishPhotoEdit:)]) {
-                    [weakSelf.delegate lf_VideoEditingController:weakSelf didFinishPhotoEdit:videoEdit];
-                }
-                [weakSelf hideProgressHUD];
+                [strongSelf completeVideoEditingWithEdit:nil awaitsPostProcessing:awaitsPostProcessing];
             });
         }
     });
+}
+
+- (void)completeVideoEditingWithEdit:(LFVideoEdit * _Nullable)videoEdit awaitsPostProcessing:(BOOL)awaitsPostProcessing
+{
+    [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
+
+    if (awaitsPostProcessing) {
+        float progressOffset = videoEdit ? kTrimProgressFraction : 0.0f;
+        __weak typeof(self) weakSelf = self;
+        __block BOOL didComplete = NO;
+        [self.delegate lf_VideoEditingController:self
+                              didFinishPhotoEdit:videoEdit
+                              processingProgress:^(float progress) {
+            [weakSelf setProgress:progressOffset + progress * (1.0f - progressOffset)];
+        }
+                            processingCompletion:^{
+            dispatch_block_t completion = ^{
+                __strong typeof(weakSelf) strongSelf = weakSelf;
+                if (!strongSelf || didComplete) {
+                    return;
+                }
+                didComplete = YES;
+                [strongSelf hideProgressHUD];
+                [strongSelf->_EditingView setPlayPauseButtonHidden:NO];
+            };
+            if ([NSThread isMainThread]) {
+                completion();
+            } else {
+                dispatch_async(dispatch_get_main_queue(), completion);
+            }
+        }];
+        return;
+    }
+
+    if ([self.delegate respondsToSelector:@selector(lf_VideoEditingController:didFinishPhotoEdit:)]) {
+        [self.delegate lf_VideoEditingController:self didFinishPhotoEdit:videoEdit];
+    }
+    [self hideProgressHUD];
+    [_EditingView setPlayPauseButtonHidden:NO];
 }
 
 - (void)toggleHDButton:(UIButton *)sender {

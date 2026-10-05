@@ -197,6 +197,9 @@ typedef NS_ENUM(NSUInteger, LFVideoEditOperationSubType) {
 
 @protocol LFVideoEditingControllerDelegate;
 
+typedef void (^LFVideoEditingControllerProcessingProgress)(float progress);
+typedef void (^LFVideoEditingControllerProcessingCompletion)(void);
+
 @interface LFVideoEditingController : LFBaseEditingController
 
 /** 编辑视频 */
@@ -260,6 +263,10 @@ typedef NS_ENUM(NSUInteger, LFVideoEditOperationSubType) {
 - (void)lf_VideoEditingControllerDidCancel:(LFVideoEditingController *)videoEditingVC;
 - (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didFinishPhotoEdit:(LFVideoEdit *)videoEdit;
 @optional
+- (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC
+               didFinishPhotoEdit:(LFVideoEdit * _Nullable)videoEdit
+               processingProgress:(LFVideoEditingControllerProcessingProgress)processingProgress
+             processingCompletion:(LFVideoEditingControllerProcessingCompletion)processingCompletion;
 - (void)lf_VideoEditingController:(LFVideoEditingController *)videoEditingVC didCancelPhotoEdit:(LFVideoEdit *)videoEdit __deprecated_msg("delete deprecated. Use `lf_VideoEditingControllerDidCancel:`");
 
 @end

@@ -308,6 +308,10 @@ NSString *const kLFVideoEditingViewData_audioEnable = @"LFVideoEditingViewData_a
 {
     [self.clippingView pauseVideo];
 }
+- (void)setPlayPauseButtonHidden:(BOOL)hidden
+{
+    [self.clippingView setPlayPauseButtonHidden:hidden];
+}
 /** 重置视频 */
 - (void)resetVideoDisplay
 {
